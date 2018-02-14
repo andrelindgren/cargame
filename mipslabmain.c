@@ -69,5 +69,5 @@ int main(void) {
 	{
 	  labwork(); /* Do lab-specific things again and again */
 	}
-	return 0;
+	return 0; 
 }
