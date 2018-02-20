@@ -11,4 +11,6 @@ Section 14 Timers:    http://ww1.microchip.com/downloads/en/DeviceDoc/61105F.pdf
  
 Basic I/O shield:  
 https://store.digilentinc.com/chipkit-basic-i-o-shield-input-output-expansion-add-on-board-with-oled-display-retired/
+A0 (potentiometer bit 2 in port B)
+14/A0 J7-01 14 C2IN-/AN2/SS1/CN4/RB2 
 
