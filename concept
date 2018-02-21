@@ -1,3 +1,7 @@
 
 Display is 128x32 pixels
 
+PixelMap is a matrix of all the pixels.
+Simple hit detection: 1. Insert car last  
+                      2.
+
