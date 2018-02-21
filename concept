@@ -2,6 +2,11 @@
 Display is 128x32 pixels
 
 PixelMap is a matrix of all the pixels.
-Simple hit detection: 1. Insert car last  
-                      2.
+Simple hit detection: 1. Clear pixelMap  
+                      2. Insert car second to last  
+                      3. If any of the cars pixels is already 1 -> Hit detected!  
+                      4. Insert road  
+                      Problems: Road pixels will be rendered over all other, no "black" pixels on sprites allowed 
+                      
+Advanced hit detection: 
 
