@@ -16,4 +16,5 @@ A0 (potentiometer bit 2 in port B)
 
 
 https://www.watch2gether.com/rooms/xkjher1xvvuu44cc0f
+https://github.com/is1200-example-projects/hello-display
 
