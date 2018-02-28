@@ -28,7 +28,6 @@ void* stdout;
 #define DISPLAY_COMMAND_DATA PORTFbits.RF4
 #define DISPLAY_RESET PORTGbits.RG9
 
-
 //#define DISPLAY_VDD_PORT PORTF
 #define DISPLAY_VDD_MASK 0x40
 //#define DISPLAY_VBATT_PORT PORTF
@@ -43,13 +42,14 @@ void delay(int cyc) {
 	for(i = cyc; i > 0; i--);
 }
 
-uint8_t spi_send_recv(uint8_t data) {
+void spi_send_recv(uint8_t data) {
 	while(!(SPI2STAT & 0x08)); // ! 0000 1000 If SPIxTXB is not empty
 	SPI2BUF = data;
-	while(!(SPI2STAT & 0x01)); // NOT 0000 0001  IF SPIxRXB is not full
-	return SPI2BUF;
+	//while(!(SPI2STAT & 0x01)); // NOT 0000 0001  IF SPIxRXB is not full
+	//return SPI2BUF;
 }
 
+// COPIED
 void display_init() {
 	PORTF &= ~DISPLAY_COMMAND_DATA_MASK; // NOT 
 	delay(10);
@@ -80,9 +80,10 @@ void display_init() {
 	spi_send_recv(0xAF); // 1010 1111
 }
 
-void display_image(int x, unsigned char chopp[128][32]) {
+// COPIED
+void display_image(int x, unsigned char pixelMap[128][32]) {
 	int i, j, k;
-	unsigned char sopp = 0;
+	unsigned char pixelBuffer = 0;
 	for(i = 0; i < 4; i++) {
 		PORTF &= ~DISPLAY_COMMAND_DATA_MASK; // NOT!!!!
 		spi_send_recv(0x22); // 0010 0010
@@ -94,15 +95,15 @@ void display_image(int x, unsigned char chopp[128][32]) {
 		PORTF |= DISPLAY_COMMAND_DATA_MASK;
 		
 
-
+		// I CREATED THIS
 		for(j = 0; j < 128; j++) {
-			sopp = 0;
+			pixelBuffer = 0;
 			for (k = 0; k < 8; k++) {
-				if (chopp[j][k+((3-i)*8)] == 1) {
-					sopp = sopp | (chopp[j][k+((3-i)*8)] << (7-k));
+				if (pixelMap[j][k+((3-i)*8)] == 1) {
+					pixelBuffer = pixelBuffer | (pixelMap[j][k+((3-i)*8)] << (7-k));
 				}
 			}
-			spi_send_recv(sopp);
+			spi_send_recv(pixelBuffer);
 		}
 	}
 }
@@ -114,7 +115,7 @@ void display_image(int x, unsigned char chopp[128][32]) {
 
 
 
-
+// For polling timer
 int timerEnd(void) {
 	if(IFS(0) & 0x0100) {
 		IFS(0) = 0;
@@ -132,27 +133,7 @@ int timerEnd(void) {
 int main (void) {
 
 
-	T2CON = 0x070;
-	TMR2 = 0x0;
-	PR2 = (80000000 / 256) / 100;
-	IFS(0) = 0;
-	T2CONSET = 0x8000;
-
-
-
-
-
-
-
-
-
-
-
-
-	//POT
-	//POT
-	unsigned int volt;
-	
+	// COPIED
 	/* PORTB.2 is analog pin with potentiometer*/
 	AD1PCFG = ~(1 << 2);
 	TRISBSET = (1 << 2);
@@ -167,9 +148,10 @@ int main (void) {
 	AD1CON2 = 0x0;
 	AD1CON3 |= (0x1 << 15);
 	
+	//Dont need
 	/* Set up output pins */
-	ODCE = 0x0;
-	TRISECLR = 0xFF;
+	//ODCE = 0x0;
+	//TRISECLR = 0xFF;
 	
 	/* Turn on ADC */
 	AD1CON1 |= (0x1 << 15);		
@@ -179,22 +161,7 @@ int main (void) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// INTERNET CODE
+	// COPIED
 	/* Set up peripheral bus clock */
 	OSCCON &= ~0x180000;
 	OSCCON |= 0x080000;
@@ -241,37 +208,29 @@ int main (void) {
 
 
 
+	//Timer
+	T2CON = 0x070;
+	TMR2 = 0x0;
+	PR2 = (80000000 / 256) / 100; // 100 times per second
+	IFS(0) = 0;
+	T2CONSET = 0x8000;
 
-
-
-
-
-
-
-
-
-	// For fun
-	int bounce = 0;
+	//POT
+	unsigned int volt;
 
 	// Movespeed
 	double speedY = 100;
-
-	// Code taken from internet
-	//struct timeval stop, start;
-	// End code taken from internet
 
 	// Variables for for-loops
 	int i;
 	int j;
 	int n;
 
-	long timeElapsed = 0; 
-
-	//printf("Hello world!");
-	//printf("\n");
+	//How long each frame is (100 frames/s -> frame = 10000 microseconds)
+	long timeElapsed = 10000; 
 
 	// PixelMap
-	unsigned char pM[128][32];
+	unsigned char pM[pMM][pMN];
 	clearMatrix(pMM, pMN, pM);
 
 	// Road
@@ -294,41 +253,28 @@ int main (void) {
 	double obsY[nObs];
 	unsigned char obs[nObs][16][16];
 	
+	// Fill list of templates
 	unsigned char templateList[5][16][16] = {
-		template1, 
-		template2, 
-		truck,
-		template2, 
-		truck
+		{template1},
+		{template2}, 
+		{truck},
+		{dog}, 
+		{house},
 	}; 
 
+	//Assign all obstacles a template
 	for (i = 0; i < nObs; i++) {
-		obsX[0] = 20;
-		obsY[0] = 30;
-		clearMatrix(16, 16, obs[0]);
-		insertSprite(16, 16, obs[0], 16, 16, templateList[i], 0, 0);
-	}
-	
+		obsX[i] = 20;
+		obsY[i] = 30;
+		clearMatrix(16, 16, obs[i]);
+		insertSprite(16, 16, obs[i], 16, 16, templateList[i], 0, 0);
+	} 
 
-
-	/*(unsigned char **)templateList[0] = template1;
-	(unsigned char **)templateList[1] = template2;
-	(unsigned char **)templateList[2] = truck;
-*/
-
-
-	int randomStack;
+	// Random number
 	int r = 0; 
 	
-
+	// COPIED
 	display_init();
-	
-	/*
-	 * Loop used to demonstrate displaying on screen, will be replaced with translate function
-	 */
-	int t;
-
-	timeElapsed = 10*1000;
 
 	while (1) {
 
@@ -343,69 +289,32 @@ int main (void) {
 			carX = 32-carTemplateN;
 		} 
 
+		// Frameupdate
 		if (timerEnd()) {
 
-			//if (speedY < 700) {
-			//	speedY = speedY + 0.5;
-			//}
-	
-			//srand(randomStack);
-			//r = rand() % 20;
-	
-		
-	
-	
-			//Start game
-	
+			if (speedY < 700) {
+				speedY = speedY + 0.5;
+			}
+
 			clearMatrix(pMM, pMN, pM);
-			
+
 			// Insert obstacles
 			for (i = 0; i < nObs; i++) {
 				insertSprite(pMM, pMN, pM, 16, 16, obs[i], (int) obsX[i], (int) obsY[i]);
 			}
 			// Hit detection
 			if (carHit(pMM, pMN, pM, carTemplateM, carTemplateN, car, carX, carY)) {
-				//printf("CAR HIT! ");
-				////printf("\n");
 				return 0;
 			} 
-			
-			// Road and car
+			// Insert road and car
 			insertSprite(pMM, pMN, pM, roadTemplateM, roadTemplateN, road, (int) roadX, (int) roadY);
 			insertSprite(pMM, pMN, pM, carTemplateM, carTemplateN, car, carX, carY);
 		
-			//speedY++;
-		
-			//printf("\n");
-			//printf("\n");
-			//printf("\n");
-			//printf("\n");
-			//printf("\n");
-			//printf("\n");
-			//printf("\n");
-			//printf("\n");
-			//printf("\n");
-			//printf("\n");
-			//printf("\n");
-			//printf("Y-pos: ");
-			//printf("%f", obsY[0]);
-			//printf(" frame: ");
-			//printf("%d", t);
-			//printf(" runTime: ");
-			//printf("%f", (double) t*frameTime/1000);
-			//printf("\n");
-		
 			display_image(0, pM);
-		
-			
-			
-			
-   		
 			
 			for (i = 0; i < nObs; i++) {
 				moveSprite(0, speedY, timeElapsed, &obsX[i], &obsY[i]);
 				if (obsY[i] > pMM) {
-
 					srand(TMR2);
 					r = rand() % 200;
 					obsY[i] = obsY[i] - (pMM+16) - r;
@@ -415,15 +324,23 @@ int main (void) {
 					obsX[i] = r;
 
 					srand(TMR2+2);
-					r = rand() % 3;
+					r = rand() % 5;
 		
 					if (r == 0) {
 						clearMatrix(16, 16, obs[i]);
-						insertSprite(16, 16, obs[i], 16, 16, truck, 0, 0);
+						insertSprite(16, 16, obs[i], 16, 16, templateList[r], 0, 0);
 					}
 					else if (r == 1) {
 						clearMatrix(16, 16, obs[i]);
 						insertSprite(16, 16, obs[i], 16, 16, template1, 0, 0);
+					}
+					else if (r == 2) {
+						clearMatrix(16, 16, obs[i]);
+						insertSprite(16, 16, obs[i], 16, 16, dog, 0, 0);
+					}
+					else if (r == 3) {
+						clearMatrix(16, 16, obs[i]);
+						insertSprite(16, 16, obs[i], 16, 16, house, 0, 0);
 					}
 					else {
 						clearMatrix(16, 16, obs[i]);
@@ -431,16 +348,14 @@ int main (void) {
 					}
 				}
 			}
-		
+
 			moveSprite(0, speedY, timeElapsed, &roadX, &roadY);
 			if (roadY > 5) {
 				roadY = roadY - 10;
 			}
-		
-		
+			
 				
 			/*
-			
 			if (carX > 0 || carX < 20) {
 				if ((volt/32) >= 16) {
 					moveSprite(volt/128, 0, timeElapsed, &carX, &carY);
@@ -453,7 +368,6 @@ int main (void) {
 	
 		}
 	}
-
 	return 0;
 }
 

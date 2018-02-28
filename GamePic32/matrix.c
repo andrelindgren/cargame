@@ -50,9 +50,9 @@ unsigned char carHit(const unsigned char m, const unsigned char n, unsigned char
 }
 
 /*
- * speedX = y/frame 
+ * speedY = Y-cord/sec
  */
-void moveSprite(double speedX, double speedY, long lastTime, double* x, double* y) {
-	*x = *x + speedX * (((double) lastTime)/1000000);
-	*y = *y + speedY * (((double) lastTime)/1000000);
+void moveSprite(double speedX, double speedY, long timeElapsed, double* x, double* y) {
+	*x = *x + speedX * (((double) timeElapsed)/1000000);
+	*y = *y + speedY * (((double) timeElapsed)/1000000);
 }

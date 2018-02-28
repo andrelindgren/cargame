@@ -16,12 +16,14 @@ void moveSprite(double speedX, double speedY, long lastTime, double* x, double* 
 
 extern const unsigned char pMM;
 extern const unsigned char pMN;
-extern unsigned char pMTemplate[128][32];
-
 
 extern unsigned char template1[16][16];
 
 extern unsigned char truck[16][16];
+
+extern unsigned char house[16][16];
+
+extern unsigned char dog[16][16];
 
 extern unsigned char template2[16][16];
 
