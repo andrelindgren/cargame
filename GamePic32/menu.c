@@ -214,8 +214,49 @@ int getbtns (void){
 	btns = btns >> 5;
 	return btns;
 }
+
+void mainMenu(void) {
+	delay(1000000);
+	while (1) {
+			
+		display_string(0, "Car Game");
+		display_string(1, "1. Start");
+		display_string(2, "2. Rules");
+		display_string(3, "");
+		display_update();
+		if (((getbtns() & 0x04) != 0)) {
+			chooselevel();
+		}
+		if(((getbtns() & 0x02) != 0)) {
+			ruleMenu();
+		}
+	}		
+}
+
+void chooselevel(void){
+	delay(1000000);
+	while(1) {
+		display_string(0, "City");
+		display_string(1, "Forest");
+		display_string(2, "Ocean");
+		display_string(3, "");
+		display_update();
+		if(((getbtns() & 0x04) != 0)){
+			difficultyMenu(0);
+		}
+		
+		if(((getbtns() & 0x02) != 0)){
+			difficultyMenu(1);
+		}
+		
+		if(((getbtns() & 0x01) != 0)){
+			difficultyMenu(2);
+		}
+	}
+}
+
 	
-void difficultyMenu(void) {
+void difficultyMenu(int level) {
 	delay(1000000);
 	unsigned int volt;
 	int ental = 0;
@@ -268,51 +309,47 @@ void difficultyMenu(void) {
 		
 		display_update();
 		if (((getbtns() & 0x04) != 0)) {
-			gameLost = game(ental);
+			gameLost = game(level, ental);
 			if (gameLost == 1) {
 				LostMenu();
 			} 
+			else if ( gameLost == 2) {
+				winMenu();
+			}
 		}
 		if(((getbtns() & 0x02) != 0)) {
 			mainMenu();
 		}
 	}		
 }
-	
 
-void mainMenu(void) {
+int PauseMenu(void){
 	delay(1000000);
-	while (1) {
-			
-		display_string(0, "Car Game");
-		display_string(1, "1. Start");
-		display_string(2, "2. Rules");
-		display_string(3, "");
-		display_update();
-		if (((getbtns() & 0x04) != 0)) {
-			difficultyMenu();
-		}
-		if(((getbtns() & 0x02) != 0)) {
-			ruleMenu();
-		}
-	}		
-}
-
-void PauseMenu(void){
-	delay(1000000);
-	int paused = 1;
-	while(paused) {
+	while(1) {
 		display_string(0, "Pause");
 		display_string(1, "1. Continue");
 		display_string(2, "2. Quit");
 		display_string(3, "");
 		display_update();
 		if(((getbtns() & 0x04) != 0)) {
-			paused = 0;
+			return 0;
 		}
 		if(((getbtns() & 0x02) != 0)) {
-			mainMenu();
+			return 1;
 		}
+	}
+}
+
+void winMenu(void){
+	delay(1000000);
+	while(1) {
+		display_string(0, "Congratulations");
+		display_string(1, "You win!");
+		display_string(2, "1. Play again");
+		display_string(3, "");
+		display_update();
+		if(((getbtns() & 0x04) != 0))
+			chooselevel();
 	}
 }
 
@@ -325,7 +362,7 @@ void LostMenu(void){
 		display_string(3, "");
 		display_update();
 		if(((getbtns() & 0x04) != 0)) {
-			difficultyMenu();
+			difficultyMenu(1);
 		}
 		if(((getbtns() & 0x02) != 0)) {
 			mainMenu();

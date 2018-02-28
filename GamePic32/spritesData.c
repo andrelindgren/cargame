@@ -36,6 +36,8 @@ unsigned char truck[16][16] = {
 	{0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0},
 };
 
+unsigned char dogW = 7;
+unsigned char dogH = 5;
 unsigned char dog[16][16] = {
 	{0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0},
 	{1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
@@ -55,6 +57,8 @@ unsigned char dog[16][16] = {
 	{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 };
 
+unsigned char houseW = 16;
+unsigned char houseH = 16;
 unsigned char house[16][16] = {
 	{0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0},
 	{0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0},
@@ -74,6 +78,8 @@ unsigned char house[16][16] = {
 	{0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0},
 };
 
+unsigned char templateList[5][16][16];
+
 const unsigned char carTemplateM = 8;
 const unsigned char carTemplateN = 4;
 unsigned char carTemplate[8][4] = { 
@@ -86,6 +92,14 @@ unsigned char carTemplate[8][4] = {
 	{1, 1, 1, 1} ,
 	{1, 0, 0, 1} ,
 };
+
+const unsigned char goalTemplateM = 2;
+const unsigned char goalTemplateN = 2;
+unsigned char goalTemplate[2][2] = {
+	{1, 1}, 
+	{1, 1},
+};
+
 
 const unsigned char roadTemplateM = 135;
 const unsigned char roadTemplateN = 2;
