@@ -1,20 +1,20 @@
 #include <pic32mx.h>
 #include <stdint.h>
 
-#define DISPLAY_VDD PORTFbits.RF6
-#define DISPLAY_VBATT PORTFbits.RF5
-#define DISPLAY_COMMAND_DATA PORTFbits.RF4
-#define DISPLAY_RESET PORTGbits.RG9
+#define DISPLAY_VDD PORTFbits.RF6  // bit 6 in portF
+#define DISPLAY_VBATT PORTFbits.RF5 // bit 5 in portF
+#define DISPLAY_COMMAND_DATA PORTFbits.RF4 // bit 4 in portF
+#define DISPLAY_RESET PORTGbits.RG9 // bit 9 in portG
 
 
 #define DISPLAY_VDD_PORT PORTF
-#define DISPLAY_VDD_MASK 0x40
-#define DISPLAY_VBATT_PORT PORTF
-#define DISPLAY_VBATT_MASK 0x20
+#define DISPLAY_VDD_MASK 0x40  //0100 0000
+#define DISPLAY_VBATT_PORT PORTF //
+#define DISPLAY_VBATT_MASK 0x20 // 0010 0000
 #define DISPLAY_COMMAND_DATA_PORT PORTF
-#define DISPLAY_COMMAND_DATA_MASK 0x10
-#define DISPLAY_RESET_PORT PORTG
-#define DISPLAY_RESET_MASK 0x200
+#define DISPLAY_COMMAND_DATA_MASK 0x10  // 0001 0000
+#define DISPLAY_RESET_PORT PORTG   
+#define DISPLAY_RESET_MASK 0x200  // 0010 0000 0000
 
 
 char textbuffer[4][16];
@@ -175,9 +175,9 @@ void delay(int cyc) {
 }
 
 uint8_t spi_send_recv(uint8_t data) {
-	while(!(SPI2STAT & 0x08));
+	while(!(SPI2STAT & 0x08));  // while bit spitbe = 0 , 
 	SPI2BUF = data;
-	while(!(SPI2STAT & 0x01));
+	while(!(SPI2STAT & 0x01)); // while bit SPIRBf = 0 , 
 	return SPI2BUF;
 }
 
@@ -268,6 +268,174 @@ void display_update() {
 	}
 }
 
+int getbtns (void){
+		int btns = PORTD & 0x0e0;
+		btns = btns >> 5;
+	return btns;
+	}
+	
+int timerEnd(void) {
+	if(IFS(0) & 0x0100) {
+		IFS(0) = 0;
+			return(1);
+	}
+	else {
+		return(0);
+	}
+}
+	
+	
+	void difficultyMenu(void);
+	void mainMenu(void);
+	void GameMenu(void);
+	void PauseMenu(void);
+	void LostMenu(void);
+	void ruleMenu(void);
+	
+void difficultyMenu(void) {
+	delay(1000000);
+	unsigned int volt;
+	int ental = 0;
+	while (1) {
+		
+		
+		
+		AD1CON1 |= (0x1 << 1);
+		while(!(AD1CON1 & (0x1 << 1)));
+		while(!(AD1CON1 & 0x1));
+	
+		
+	
+		/* Get the analog value */
+		volt = ADC1BUF0;
+		
+		ental = volt / 32 / 3.2;
+	
+		display_string(0, "choose difficulty");
+		display_string(1, "1. choose");
+		display_string(2, "2. quit");
+		
+		if (ental == 0) {
+			display_string(3, "0");
+		}
+		else if (ental == 1) {
+			display_string(3, "1");
+		}
+		else if (ental == 2) {
+			display_string(3, "2");
+		}
+		else if (ental == 3) {
+			display_string(3, "3");
+		}
+		else if (ental == 4) {
+			display_string(3, "4");
+		}
+		else if (ental == 5) {
+			display_string(3, "5");
+		}
+		else if (ental == 6) {
+			display_string(3, "6");
+		}
+		else if (ental == 7) {
+			display_string(3, "7");
+		}
+		else if (ental == 8) {
+			display_string(3, "8");
+		}
+		else if (ental == 9) {
+			display_string(3, "9");
+		}
+		
+		
+		display_update();
+		if (((getbtns() & 0x04) != 0)) {
+			 GameMenu();
+		}
+		if(((getbtns() & 0x02) != 0)) {
+			mainMenu();
+		}
+	}		
+}
+	
+	
+void mainMenu(void) {
+	delay(1000000);
+	while (1) {
+			
+		display_string(0, "Car Game");
+		display_string(1, "1. Start");
+		display_string(2, "2. Rules");
+		display_string(3, "");
+		display_update();
+		if (((getbtns() & 0x04) != 0)) {
+			difficultyMenu();
+		}
+		if(((getbtns() & 0x02) != 0)) {
+			ruleMenu();
+		}
+	}		
+}
+void GameMenu(void){
+	delay(1000000);
+	while (1) {
+		display_string(0, "game running");
+		display_string(1, "");
+		display_string(2, "");
+		display_string(3, "");
+		display_update();	
+		if(((getbtns() & 0x04) != 0)) {
+			LostMenu();
+		}	
+		if(((getbtns() & 0x02) != 0)) {
+			PauseMenu();
+		}			
+	}
+}	
+void PauseMenu(void){
+	delay(1000000);
+	while(1) {
+		display_string(0, "Pause");
+		display_string(1, "1. Continue");
+		display_string(2, "2. Quit");
+		display_string(3, "");
+		display_update();
+		if(((getbtns() & 0x04) != 0)) {
+			GameMenu();
+		}
+		if(((getbtns() & 0x02) != 0)) {
+			mainMenu();
+		}
+	}
+}
+void LostMenu(void){
+	delay(1000000);
+	while(1) {
+		display_string(0, "You Lose");
+		display_string(1, "1. Try again");
+		display_string(2, "2. Quit");
+		display_string(3, "");
+		display_update();
+		if(((getbtns() & 0x04) != 0)) {
+			difficultyMenu();
+		}
+		if(((getbtns() & 0x02) != 0)) {
+			mainMenu();
+		}	
+	}
+}	
+void ruleMenu(void){
+	delay(1000000);
+	while(1) {
+		display_string(0, "Controls");
+		display_string(1, "Steer with wheel");
+		display_string(2, "Don't get hit");
+		display_string(3, "Good Luck!");
+		display_update();
+		if(((getbtns() & 0x04) != 0)) {
+			mainMenu();
+		}
+	}
+}	
 int main(void) {
 	/* Set up peripheral bus clock */
 	OSCCON &= ~0x180000;
@@ -304,20 +472,23 @@ int main(void) {
 	SPI2CONSET = 0x8000;
 	
 	
-	
-	int getbtns (void){
-		int btns = PORTD & 0x0e0;
-		btns = btns >> 5;
-	return btns;
-	}
-	
-	
-	
-	
-	
-	
 
-	unsigned int volt;
+	T2CON = 0x070;
+	TMR2 = 0x0;
+	PR2 = (80000000 / 256) / 10;
+	IFS(0) = 0;
+	T2CONSET = 0x8000;
+	
+	int timeoutcount = 0;
+
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	/* PORTB.2 is analog pin with potentiometer*/
 	AD1PCFG = ~(1 << 2);
@@ -339,49 +510,133 @@ int main(void) {
 	
 	/* Turn on ADC */
 	AD1CON1 |= (0x1 << 15);
+
 	
 	display_init();
     int btnspressed = 0;	
+	int meny = 1;
+	
+	mainMenu();
 	
 	while (1){
-		AD1CON1 |= (0x1 << 1);
-		while(!(AD1CON1 & (0x1 << 1)));
-		while(!(AD1CON1 & 0x1));
-		
-		/* Get the analog value */
-		volt = ADC1BUF0;
-				
-		PORTE = volt / 32;	
 		
 		
 		
 		
-		if ((getbtns() & 0x04) != 0) {
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		if(timerEnd()){
+			timeoutcount++;
+		}
+		
+		if (((getbtns() & 0x04) != 0)) {
+		
 		btnspressed = 1;
+		//timeoutcount = 0;
+		
 		}
-		if ((getbtns() & 0x02) != 0) {
+		if (((getbtns() & 0x02) != 0)) {
+		
 		btnspressed = 2;
+		//timeoutcount = 0;
 		}
-		if ((getbtns() & 0x01) != 0) {
+		if (((getbtns() & 0x01) != 0)) {
 		btnspressed = 3;
+		//timeoutcount = 0;
 		}
 		
-		if(btnspressed == 1){
-		display_string(0, "choose diffculty");
-		display_string(2, "");
-		display_update();
-		}	
-		if(btnspressed == 0 || btnspressed == 2){
-		display_string(0, "GAME");
-		display_string(1, "");
-		display_string(2, "press 1");
-		display_string(3, "");
-		display_update(); 
+		
+		
+		if((btnspressed == 1) && (meny == 2)){
+			meny = 4;
+			btnspressed = 0;
+			display_string(0, "game running");
+			display_string(1, "");
+			display_string(2, "");
+			display_string(3, "");
+			display_update();
+	
 		}
+		
+		if((btnspressed == 1) && (meny == 3)){
+			meny = 4;
+			btnspressed = 0;
+			display_string(0, "game running");
+			display_string(1, "");
+			display_string(2, "");
+			display_string(3, "");
+			display_update();	
+	
+		}
+		
 	
 		
+		
+		if((btnspressed == 1) && (meny == 5)){
+			display_string(0, "Car Game");
+			display_string(1, "3. start");
+			display_string(2, "");
+			display_string(3, "");
+			display_update(); 
+			btnspressed = 0;
+			meny = 1;	
+		}
+		
+		if((btnspressed == 1) && (meny == 6)){
+			display_string(0, "Car Game");
+			display_string(1, "3. start");
+			display_string(2, "");
+			display_string(3, "");
+			display_string(3, "");
+			display_update(); 
+			btnspressed = 0;
+			meny = 1; 
+		}
+		
+		if((btnspressed == 2) && (meny == 2)){
+			display_string(0, "Car Game");
+			display_string(1, "3. start");
+			display_string(2, "");
+			display_string(3, "");
+			display_update();
+			meny = 1;
+			btnspressed = 0;
+		}
+		if((btnspressed == 2) && (meny == 3)){
+			display_string(0, "Car Game");
+			display_string(1, "3. start");
+			display_string(2, "");
+			display_string(3, "");
+			display_update();
+			meny = 1;
+			btnspressed = 0;
+		
+		}
+		
+		
+		if((btnspressed == 3) && (meny == 4)) {
+			display_string(0, "pause");
+			display_string(1, "1. continue");
+			display_string(2, "2. quit");
+			display_string(3, "");
+			display_update();
+			meny = 3;
+			btnspressed = 3;
+		}
+		
+		display_update();
 		
 	}
-	
-}
+}	
+
 	
