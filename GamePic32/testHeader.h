@@ -5,6 +5,8 @@
  * 
  * Header for all test files
  */
+
+int game (int difficulty);
 void clearMatrix(const unsigned char m, const unsigned char n, unsigned char matrix[m][n]);
 
 void insertSprite(const unsigned char m, const unsigned char n, unsigned char pxlMap[m][n], const unsigned char m2, const unsigned char n2, unsigned char sprite[m2][n2], int x, int y);
@@ -12,6 +14,13 @@ void insertSprite(const unsigned char m, const unsigned char n, unsigned char px
 unsigned char carHit(const unsigned char m, const unsigned char n, unsigned char pxlMap[m][n], const unsigned char carM, const unsigned char carN, unsigned char car[carM][carN], int x, int y);
 
 void moveSprite(double speedX, double speedY, long lastTime, double* x, double* y);
+
+void difficultyMenu(void);
+void mainMenu(void);
+void GameMenu(void);
+void PauseMenu(void);
+void LostMenu(void);
+void ruleMenu(void);
 
 
 extern const unsigned char pMM;
