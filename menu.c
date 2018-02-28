@@ -142,9 +142,34 @@ void ruleMenu(void){
 		}
 	}
 }	
-
-
-	
+void winMenu(void){
+	delay(1000000);
+	while(1) {
+		display_string(0, "Congratulations");
+		display_string(1, "You win!");
+		display_string(2, "1. Play again");
+		display_string(3, "");
+		if(((getbtns() & 0x04) != 0))
+			choselevel();
+	}
+}
+void choselevel(void){
+	delay(1000000);
+	while(1) {
+		display_string(0, "City");
+		display_string(1, "Forest");
+		display_string(2, "Ocean");
+		display_string(3, "");
+		if(((getbtns() & 0x04) != 0)){
+		}
+		
+		if(((getbtns() & 0x02) != 0)){
+		}
+		
+		if(((getbtns() & 0x01) != 0)){
+		}
+	}
+}		
 	
 	
 	
