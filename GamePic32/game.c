@@ -11,28 +11,25 @@
 void setupLevel(int level) {
 	int i;
 	for (i = 0; i < 5; i++) {
-			clearMatrix(16, 16, templateList[i]);
-		}
-	if (level = 0) {
-		insertSprite(16, 16, templateList[0], 16, 16, house, 0, 0);
-		insertSprite(16, 16, templateList[1], 16, 16, house, 0, 0);
-		insertSprite(16, 16, templateList[2], 16, 16, house, 0, 0);
-		insertSprite(16, 16, templateList[3], 16, 16, house, 0, 0);
-		insertSprite(16, 16, templateList[4], 16, 16, house, 0, 0);
-	} 
-	else if (level = 1) {
-		insertSprite(16, 16, templateList[0], 16, 16, dog, 0, 0);
-		insertSprite(16, 16, templateList[1], 16, 16, dog, 0, 0);
-		insertSprite(16, 16, templateList[2], 16, 16, dog, 0, 0);
-		insertSprite(16, 16, templateList[3], 16, 16, dog, 0, 0);
-		insertSprite(16, 16, templateList[4], 16, 16, dog, 0, 0);
+		clearMatrix(16, 16, templateList[i]);
 	}
-	else if (level = 2) {
+	// City
+	if (level == 0) {
 		insertSprite(16, 16, templateList[0], 16, 16, truck, 0, 0);
-		insertSprite(16, 16, templateList[1], 16, 16, truck, 0, 0);
-		insertSprite(16, 16, templateList[2], 16, 16, truck, 0, 0);
-		insertSprite(16, 16, templateList[3], 16, 16, truck, 0, 0);
-		insertSprite(16, 16, templateList[4], 16, 16, truck, 0, 0);
+		insertSprite(16, 16, templateList[1], 16, 16, house, 0, 0);
+		insertSprite(16, 16, templateList[2], 16, 16, skyscraper, 0, 0);
+	} 
+	// Forest
+	else if (level == 1) {
+		insertSprite(16, 16, templateList[0], 16, 16, tree, 0, 0);
+		insertSprite(16, 16, templateList[1], 16, 16, dog, 0, 0);
+		insertSprite(16, 16, templateList[2], 16, 16, moose, 0, 0);
+	}
+	// Ocean
+	else if (level == 2) {
+		insertSprite(16, 16, templateList[0], 16, 16, crab, 0, 0);
+		insertSprite(16, 16, templateList[1], 16, 16, beachball, 0, 0);
+		insertSprite(16, 16, templateList[2], 16, 16, palmtree, 0, 0);
 	}
 }
 
@@ -45,7 +42,7 @@ int game (int level, int difficulty) {
 	unsigned int volt;
 
 	// Movespeed
-	double speedY = 50;//100 + (difficulty * 50);
+	double speedY = 50 + (difficulty * 30);
 
 	// Variables for for-loops
 	int i;
@@ -60,13 +57,30 @@ int game (int level, int difficulty) {
 	unsigned char pM[pMM][pMN];
 	clearMatrix(pMM, pMN, pM);
 
-	// Road
 	double roadX = 14;
 	double roadY = -5;
+
 	unsigned char road[roadTemplateM][roadTemplateN];
 	clearMatrix(roadTemplateM, roadTemplateN, road);
 	insertSprite(roadTemplateM, roadTemplateN, road, roadTemplateM, roadTemplateN, roadTemplate, 0, 0);
 
+	unsigned char dirt[dirtRoadTemplateM][dirtRoadTemplateN];
+	clearMatrix(dirtRoadTemplateM, dirtRoadTemplateN, dirt);
+	insertSprite(dirtRoadTemplateM, dirtRoadTemplateN, dirt, dirtRoadTemplateM, dirtRoadTemplateN, dirtRoadTemplate, 0, 0);
+
+	unsigned char ocean[oceanTemplateM][oceanTemplateN];
+	clearMatrix(oceanTemplateM, oceanTemplateN, ocean);
+	insertSprite(oceanTemplateM, oceanTemplateN, ocean, oceanTemplateM, oceanTemplateN, oceanTemplate, 0, 0);
+	// Road
+	if (level == 0) {
+		roadX = 14;
+		roadY = -5;
+		
+	}
+	else {
+		roadX = 0;
+		roadY = -16;
+	}
 	// Goal
 	double goalX = 0;
 	double goalY = -100;
@@ -82,8 +96,13 @@ int game (int level, int difficulty) {
 	clearMatrix(carTemplateM, carTemplateN, car);
 	insertSprite(carTemplateM, carTemplateN, car, carTemplateM, carTemplateN, carTemplate, 0, 0);
 
+	//Boat
+	unsigned char boat[boatTemplateM][boatTemplateN];
+	clearMatrix(boatTemplateM, boatTemplateN, boat);
+	insertSprite(boatTemplateM, boatTemplateN, boat, boatTemplateM, boatTemplateN, boatTemplate, 0, 0);
+
 	// Array of Obstacles
-	int nObs = 5;
+	int nObs = 3;
 	double obsX[nObs];
 	double obsY[nObs];
 	unsigned char obs[nObs][16][16];
@@ -93,8 +112,8 @@ int game (int level, int difficulty) {
 
 	//Assign all obstacles a template
 	for (i = 0; i < nObs; i++) {
-		obsX[i] = 0;
-		obsY[i] = -100;
+		obsX[i] = i*12;
+		obsY[i] = (-100) - 100*i;
 		clearMatrix(16, 16, obs[i]);
 		insertSprite(16, 16, obs[i], 16, 16, templateList[i], 0, 0);
 	} 
@@ -107,8 +126,8 @@ int game (int level, int difficulty) {
 		
 		// Button 3: Pausemenu
 		if(((getbtns() & 0x01) != 0)) {
-			if (PauseMenu()) {
-				return 0;
+			if (PauseMenu() == 0) {
+				return 1;
 			}
 		}
 
@@ -139,8 +158,15 @@ int game (int level, int difficulty) {
 		volt = ADC1BUF0;
 		carX = volt / 32;
 
-		if (carX >= 32-carTemplateN) {
-			carX = 32-carTemplateN;
+		if (level == 2) {
+			if (carX >= 32-boatTemplateN) {
+				carX = 32-boatTemplateN;
+			}
+		}
+		else {
+			if (carX >= 32-carTemplateN) {
+				carX = 32-carTemplateN;
+			}
 		}
 		//Fix for pot hardware glitching
 
@@ -161,16 +187,42 @@ int game (int level, int difficulty) {
 			for (i = 0; i < nObs; i++) {
 				insertSprite(pMM, pMN, pM, 16, 16, obs[i], (int) obsX[i], (int) obsY[i]);
 			}
+			
+			// Hit detection
+			if (level == 2) {
+				if (carHit(pMM, pMN, pM, boatTemplateM, boatTemplateN, boat, carX, carY)) {
+					return 0;
+				} 
+			}
+			else {
+				if (carHit(pMM, pMN, pM, carTemplateM, carTemplateN, car, carX, carY)) {
+					return 0;
+				} 
+			}
+
+			
 			// Insert goal
 			insertSprite(pMM, pMN, pM, goalTemplateM, goalTemplateN, goal, (int) goalX, (int) goalY);
-			// Hit detection
-			if (carHit(pMM, pMN, pM, carTemplateM, carTemplateN, car, carX, carY)) {
-				return 1;
-			} 
 			// Insert road and car
-			insertSprite(pMM, pMN, pM, roadTemplateM, roadTemplateN, road, (int) roadX, (int) roadY);
-			insertSprite(pMM, pMN, pM, carTemplateM, carTemplateN, car, carX, carY);
-		
+			if (level == 0) {
+				insertSprite(pMM, pMN, pM, roadTemplateM, roadTemplateN, road, (int) roadX, (int) roadY);
+				insertSprite(pMM, pMN, pM, carTemplateM, carTemplateN, car, carX, carY);
+			} 
+			else if (level == 1) {
+				for (i = 0; i < 9; i++) {
+					insertSprite(pMM, pMN, pM, dirtRoadTemplateM, dirtRoadTemplateN, dirt, (int) roadX, (int) roadY + i*16);
+				}
+				insertSprite(pMM, pMN, pM, carTemplateM, carTemplateN, car, carX, carY);
+			}
+			else {
+				for (i = 0; i < 9; i++) {
+					insertSprite(pMM, pMN, pM, oceanTemplateM, oceanTemplateN, ocean, (int) roadX, (int) roadY + i*16);
+				}
+				insertSprite(pMM, pMN, pM, boatTemplateM, boatTemplateN, boat, carX, carY);
+			}
+
+			
+	
 			display_image(0, pM);
 			
 			for (i = 0; i < nObs; i++) {
@@ -184,18 +236,18 @@ int game (int level, int difficulty) {
 						obsY[i] = -r;
 	
 						srand(TMR2+1);
-						r = rand() % (32 - (houseW));
+						r = rand() % (32 - (16));
 						obsX[i] = r;
 	
 						srand(TMR2+2);
-						r = rand() % 5;
+						r = rand() % 3;
 						
 						clearMatrix(16, 16, obs[i]);
 						insertSprite(16, 16, obs[i], 16, 16, templateList[r], 0, 0);
 						
 						j = 0;
 						while (j < nObs) {
-							if (j != i && ((obsX[j] > obsX[i] + houseW) || (obsX[j] + houseW < obsX[i]) || (obsY[j] > obsY[i] + houseH) || (obsY[j] + houseH < obsY[i]))) {
+							if (j != i && ((obsX[j] > obsX[i] + 16) || (obsX[j] + 16 < obsX[i]) || (obsY[j] > obsY[i] + 16) || (obsY[j] + 16 < obsY[i]))) {
 								notFreeSpace = 0;
 							}
 							j++;
@@ -204,7 +256,7 @@ int game (int level, int difficulty) {
 				}
 			}
 
-			if (runTime > 2000) {
+			if (runTime > 100) {
 				moveSprite(0, speedY, timeElapsed, &goalX, &goalY);
 				if (goalY > carY) {
 					return 2;
@@ -212,8 +264,11 @@ int game (int level, int difficulty) {
 			}
 
 			moveSprite(0, speedY, timeElapsed, &roadX, &roadY);
-			if (roadY > 5) {
+			if (level == 0 && roadY > 5) {
 				roadY = roadY - 10;
+			}
+			else if (level != 0 && roadY > 0) {
+				roadY = roadY - 16;
 			}
 
 			moveSprite(0, carSpeedY, timeElapsed, &carX, &carY);

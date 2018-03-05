@@ -216,52 +216,80 @@ int getbtns (void){
 }
 
 void mainMenu(void) {
-	delay(1000000);
+	int firstLoop = 1;
 	while (1) {
-			
+		if (firstLoop) {
+			delay(1000000);
+			firstLoop = 0;
+		}
 		display_string(0, "Car Game");
 		display_string(1, "1. Start");
 		display_string(2, "2. Rules");
 		display_string(3, "");
 		display_update();
-		if (((getbtns() & 0x04) != 0)) {
+		if (((getbtns() & 0x04) != 0) && !firstLoop) {
 			chooselevel();
+			firstLoop = 1;
 		}
-		if(((getbtns() & 0x02) != 0)) {
+		if(((getbtns() & 0x02) != 0) && !firstLoop) {
 			ruleMenu();
+			firstLoop = 1;
 		}
 	}		
 }
 
-void chooselevel(void){
-	delay(1000000);
+int chooselevel(void){
+	int firstLoop = 1;
 	while(1) {
-		display_string(0, "City");
-		display_string(1, "Forest");
-		display_string(2, "Ocean");
+		if (firstLoop) {
+			delay(1000000);
+			firstLoop = 0;
+		}
+		display_string(0, "1. City");
+		display_string(1, "2. Forest");
+		display_string(2, "3. Ocean");
 		display_string(3, "");
 		display_update();
-		if(((getbtns() & 0x04) != 0)){
-			difficultyMenu(0);
+		if(((getbtns() & 0x04) != 0) && !firstLoop){
+			if (difficultyMenu(0) == 0) {
+				return 0;
+			} 
+			else {
+				firstLoop = 1;
+			}
 		}
 		
-		if(((getbtns() & 0x02) != 0)){
-			difficultyMenu(1);
+		if(((getbtns() & 0x02) != 0) && !firstLoop){
+			if (difficultyMenu(1) == 0) {
+				return 0;
+			} 
+			else {
+				firstLoop = 1;
+			}
 		}
 		
-		if(((getbtns() & 0x01) != 0)){
-			difficultyMenu(2);
+		if(((getbtns() & 0x01) != 0) && !firstLoop){
+			if (difficultyMenu(2) == 0) {
+				return 0;
+			} 
+			else {
+				firstLoop = 1;
+			}
 		}
 	}
 }
 
 	
-void difficultyMenu(int level) {
-	delay(1000000);
+int difficultyMenu(int level) {
+	int firstLoop = 1;
 	unsigned int volt;
-	int ental = 0;
-	int gameLost = 0;
+	int difficulty = 0;
+	int gameReturn = 0;
 	while (1) {
+		if (firstLoop) {
+			delay(1000000);
+			firstLoop = 0;
+		}
 		
 		AD1CON1 |= (0x1 << 1);
 		while(!(AD1CON1 & (0x1 << 1)));
@@ -270,56 +298,71 @@ void difficultyMenu(int level) {
 		/* Get the analog value */
 		volt = ADC1BUF0;
 		
-		ental = volt / 32 / 3.2;
+		difficulty = volt / 32 / 3.2;
 	
 		display_string(0, "Choose Difficulty");
 		display_string(1, "1. Start Game");
 		display_string(2, "2. Quit");
 		
-		if (ental == 0) {
+		if (difficulty == 0) {
 			display_string(3, "Difficulty = 0");
 		}
-		else if (ental == 1) {
+		else if (difficulty == 1) {
 			display_string(3, "Difficulty = 1");
 		}
-		else if (ental == 2) {
+		else if (difficulty == 2) {
 			display_string(3, "Difficulty = 2");
 		}
-		else if (ental == 3) {
+		else if (difficulty == 3) {
 			display_string(3, "Difficulty = 3");
 		}
-		else if (ental == 4) {
+		else if (difficulty == 4) {
 			display_string(3, "Difficulty = 4");
 		}
-		else if (ental == 5) {
+		else if (difficulty == 5) {
 			display_string(3, "Difficulty = 5");
 		}
-		else if (ental == 6) {
+		else if (difficulty == 6) {
 			display_string(3, "Difficulty = 6");
 		}
-		else if (ental == 7) {
+		else if (difficulty == 7) {
 			display_string(3, "Difficulty = 7");
 		}
-		else if (ental == 8) {
+		else if (difficulty == 8) {
 			display_string(3, "Difficulty = 8");
 		}
-		else if (ental == 9) {
+		else if (difficulty == 9) {
 			display_string(3, "Difficulty = 9");
 		}
 		
 		display_update();
-		if (((getbtns() & 0x04) != 0)) {
-			gameLost = game(level, ental);
-			if (gameLost == 1) {
-				LostMenu();
+		if(((getbtns() & 0x02) != 0) && !firstLoop) {
+			return 0; // Main menu
+		}
+
+		if (((getbtns() & 0x04) != 0) && !firstLoop) {
+			gameReturn = game(level, difficulty);
+			if (gameReturn == 0) {
+				if (LostMenu() == 0) {
+					return 0; // Main menu
+				}
+				else {
+					return 1; // Level select
+				}
 			} 
-			else if ( gameLost == 2) {
-				winMenu();
+			else if (gameReturn == 1) {
+				return 0; // Main menu
+			}
+			else if (gameReturn == 2) {
+				if (winMenu() == 0) {
+					return 0; // Main menu
+				}
+				else {
+					return 1; // Level select
+				}
 			}
 		}
-		if(((getbtns() & 0x02) != 0)) {
-			mainMenu();
-		}
+		
 	}		
 }
 
@@ -332,28 +375,32 @@ int PauseMenu(void){
 		display_string(3, "");
 		display_update();
 		if(((getbtns() & 0x04) != 0)) {
-			return 0;
+			return 1;
 		}
 		if(((getbtns() & 0x02) != 0)) {
-			return 1;
+			return 0;
 		}
 	}
 }
 
-void winMenu(void){
+int winMenu(void){
 	delay(1000000);
 	while(1) {
 		display_string(0, "Congratulations");
 		display_string(1, "You win!");
 		display_string(2, "1. Play again");
-		display_string(3, "");
+		display_string(3, "2. Main Menu");
 		display_update();
-		if(((getbtns() & 0x04) != 0))
-			chooselevel();
+		if(((getbtns() & 0x02) != 0)) {
+			return 0;
+		}
+		if(((getbtns() & 0x04) != 0)) {
+			return 1;
+		}
 	}
 }
 
-void LostMenu(void){
+int LostMenu(void){
 	delay(1000000);
 	while(1) {
 		display_string(0, "You Lose");
@@ -362,24 +409,24 @@ void LostMenu(void){
 		display_string(3, "");
 		display_update();
 		if(((getbtns() & 0x04) != 0)) {
-			difficultyMenu(1);
+			return 1;
 		}
 		if(((getbtns() & 0x02) != 0)) {
-			mainMenu();
+			return 0;
 		}	
 	}
 }	
 
-void ruleMenu(void){
+int ruleMenu(void){
 	delay(1000000);
 	while(1) {
 		display_string(0, "Controls");
 		display_string(1, "Steer with wheel");
-		display_string(2, "Don't get hit");
-		display_string(3, "Good Luck!");
+		display_string(2, "BT4 up, BT3 down");
+		display_string(3, "Don't get hit");
 		display_update();
 		if(((getbtns() & 0x04) != 0)) {
-			mainMenu();
+			return 0;
 		}
 	}
 }	

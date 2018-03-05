@@ -34,6 +34,7 @@ void* stdout;
 #define DISPLAY_RESET_PORT PORTG
 #define DISPLAY_RESET_MASK 0x200
 
+
 void delay(int cyc) {
 	int i;
 	for(i = cyc; i > 0; i--);
@@ -130,7 +131,7 @@ int timerEnd(void) {
 int main (void) {
 
 
-	// COPIED
+	// COPIED T
 	/* PORTB.2 is analog pin with potentiometer*/
 	AD1PCFG = ~(1 << 2);
 	TRISBSET = (1 << 2);
@@ -158,7 +159,7 @@ int main (void) {
 
 
 
-	// COPIED
+	// COPIED SPI
 	/* Set up peripheral bus clock */
 	OSCCON &= ~0x180000;
 	OSCCON |= 0x080000;
